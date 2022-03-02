@@ -11,7 +11,7 @@ func main() {
 	cmd := exec.Command("sh")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS |
-			syscall.CLONE_NEWUSER,
+			syscall.CLONE_NEWUSER | syscall.CLONE_NEWNET,
 	}
 	// user namespace 需要额外设置的，但本机不行，需要注释掉
 	//cmd.SysProcAttr.Credential = &syscall.Credential{Uid: uint32(1), Gid: uint32(1)}
