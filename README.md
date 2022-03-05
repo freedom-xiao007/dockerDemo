@@ -10,7 +10,7 @@ docker demo 的代码都位于文件夹：mydocker下
 go mod init dockerDemo
 go mod tidy
 go build mydocker/main.go
-go build mydocker/main.go
+./main run -ti /bin/sh
 ```
 
 ## 实践文档
