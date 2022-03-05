@@ -1,13 +1,21 @@
-# 3.1构造实现run命令版本的容器
+# 自己动手写Docker系列 -- 3.1构造实现run命令版本的容器
 ***
 
 ## 简介
 通过对前面Linux的Namespace、Cgroups、Union File System的学习，对Docker实现的基础知识有了一点点了解，接下来就跟着作者开始编写
 
-## 思路整理
-下图是《自动动手写docker》中这一章节的核心流程图，我们在跟着作者写的时候也是这个思路：
+## 源码说明
+同时放到了Gitee和Github上，都可进行获取
 
-![来源于：《自己动手写Docker》3.1章节]()
+- [Gitee: https://gitee.com/free-love/docker-demo](https://gitee.com/free-love/docker-demo)
+- [GitHub: https://github.com/lw1243925457/dockerDemo](https://github.com/lw1243925457/dockerDemo)
+
+本章节对应的版本标签是：3.1，防止后面代码过多，不好查看，可切换到标签版本进行查看
+
+## 思路整理
+下图是《自己动手写docker》中这一章节的核心流程图，我们在跟着作者写的时候也是这个思路：
+
+![来源于：《自己动手写Docker》3.1章节](https://static001.geekbang.org/infoq/f9/f914f490935a6d1dc98090239d080414.png)
 
 在学习的过程，根据自己的学习精简了下（是对于编写代码的精简）
 
