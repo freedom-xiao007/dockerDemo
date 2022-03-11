@@ -1,6 +1,7 @@
 package command
 
 import (
+	"dockerDemo/mydocker/cgroup/subsystem"
 	"dockerDemo/mydocker/container"
 	"dockerDemo/mydocker/run"
 	"fmt"
@@ -33,6 +34,18 @@ var RunCommand = cli.Command{
 			Name:  "ti",
 			Usage: "enable tty",
 		},
+		cli.StringFlag{
+			Name:  "mem",
+			Usage: "memory limit",
+		},
+		cli.StringFlag{
+			Name:  "cpuset",
+			Usage: "cpuset limit",
+		},
+		cli.StringFlag{
+			Name:  "cpushare",
+			Usage: "cpushare limit",
+		},
 	},
 	/*
 		这里是run命令执行的真正函数
@@ -49,7 +62,12 @@ var RunCommand = cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 		tty := context.Bool("ti")
-		run.Run(tty, cmdArray)
+		resConfig := &subsystem.ResourceConfig{
+			MemoryLimit: context.String("mem"),
+			CpuShare:    context.String("cpuShare"),
+			CpuSet:      context.String("cpuSet"),
+		}
+		run.Run(tty, cmdArray, resConfig)
 		return nil
 	},
 }
