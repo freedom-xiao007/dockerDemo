@@ -7,7 +7,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"strings"
 )
 
 var InitCommand = cli.Command{
@@ -19,10 +18,7 @@ var InitCommand = cli.Command{
 	*/
 	Action: func(context *cli.Context) error {
 		log.Infof("init come on")
-		cmd := context.Args().Get(0)
-		args := strings.Split(context.Args().Get(1), " ")
-		log.Infof("command: %s, args: %s", cmd, args)
-		return container.RunContainerInitProcess(cmd, args)
+		return container.RunContainerInitProcess()
 	},
 }
 
