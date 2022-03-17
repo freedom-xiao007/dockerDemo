@@ -4,6 +4,14 @@
 ## 简介
 目前docker demo中还是使用的系统原有proc，不怎么纯净，本篇中使用busybox来更换docker demo的系统挂载点
 
+## 源码说明
+同时放到了Gitee和Github上，都可进行获取
+
+- [Gitee: https://gitee.com/free-love/docker-demo](https://gitee.com/free-love/docker-demo)
+- [GitHub: https://github.com/lw1243925457/dockerDemo](https://github.com/lw1243925457/dockerDemo)
+
+本章节对应的版本标签是：4.1，防止后面代码过多，不好查看，可切换到标签版本进行查看
+
 ## 效果查看
 下面是在没有修改代码前的我们的docker的挂载情况，可以看到非常的庞大，不纯净
 
