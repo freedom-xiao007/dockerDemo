@@ -6,6 +6,7 @@ import (
 	"dockerDemo/mydocker/container"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -16,7 +17,14 @@ import (
 发送 init 参数，调用我们写的 init 方法，去初始化容器的一些资源
 */
 func Run(tty bool, cmdArray []string, config *subsystem.ResourceConfig) {
-	parent, writePipe := container.NewParentProcess(tty)
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Errorf("Run get pwd err: %v", err)
+		return
+	}
+	mntUrl := pwd + "/mnt/"
+	rootUrl := pwd + "/"
+	parent, writePipe := container.NewParentProcess(tty, rootUrl, mntUrl)
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 		return
@@ -37,6 +45,7 @@ func Run(tty bool, cmdArray []string, config *subsystem.ResourceConfig) {
 
 	log.Infof("parent process run")
 	_ = parent.Wait()
+	deleteWorkSpace(rootUrl, mntUrl)
 	os.Exit(-1)
 }
 
@@ -50,5 +59,29 @@ func sendInitCommand(array []string, writePipe *os.File) {
 	}
 	if err := writePipe.Close(); err != nil {
 		log.Errorf("write pipe close err: %v", err)
+	}
+}
+
+func deleteWorkSpace(rootUrl, mntUrl string) {
+	deleteMountPoint(mntUrl)
+	deleteWriteLayer(rootUrl)
+}
+
+func deleteMountPoint(mntUrl string) {
+	cmd := exec.Command("umount", mntUrl)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Errorf("deleteMountPoint umount %s err : %v", mntUrl, err)
+	}
+	if err := os.RemoveAll(mntUrl); err != nil {
+		log.Errorf("deleteMountPoint remove %s err : %v", mntUrl, err)
+	}
+}
+
+func deleteWriteLayer(rootUrl string) {
+	writeUrl := rootUrl + "writeLayer/"
+	if err := os.RemoveAll(writeUrl); err != nil {
+		log.Errorf("deleteMountPoint remove %s err : %v", writeUrl, err)
 	}
 }
