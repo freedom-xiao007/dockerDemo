@@ -47,6 +47,11 @@ var RunCommand = cli.Command{
 			Name:  "v",
 			Usage: "volume",
 		},
+		// 添加-d标签
+		cli.BoolFlag{
+			Name:  "d",
+			Usage: "detach container",
+		},
 	},
 	/*
 		这里是run命令执行的真正函数
@@ -63,13 +68,14 @@ var RunCommand = cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 		tty := context.Bool("ti")
+		detach := context.Bool("d")
 		resConfig := &subsystem.ResourceConfig{
 			MemoryLimit: context.String("mem"),
 			CpuShare:    context.String("cpuShare"),
 			CpuSet:      context.String("cpuSet"),
 		}
 		volume := context.String("v")
-		run.Run(tty, cmdArray, resConfig, volume)
+		run.Run(tty, detach, cmdArray, resConfig, volume)
 		return nil
 	},
 }

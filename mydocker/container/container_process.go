@@ -76,16 +76,28 @@ func createReadOnlyLayer(rootUrl string) error {
 // 创建一个名为writeLayer的文件夹作为容器的唯一可写层
 func createWriteLayer(rootUrl string) error {
 	writeUrl := rootUrl + "writeLayer/"
-	if err := os.Mkdir(writeUrl, 0777); err != nil {
-		return fmt.Errorf("create write layer failed: %v", err)
+	exist, err := pathExist(writeUrl)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if !exist {
+		if err := os.Mkdir(writeUrl, 0777); err != nil {
+			return fmt.Errorf("create write layer failed: %v", err)
+		}
 	}
 	return nil
 }
 
 func createMountPoint(rootUrl string, mntUrl string) error {
 	// 创建mnt文件夹作为挂载点
-	if err := os.Mkdir(mntUrl, 0777); err != nil {
-		return fmt.Errorf("mkdir faild: %v", err)
+	exist, err := pathExist(mntUrl)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if !exist {
+		if err := os.Mkdir(mntUrl, 0777); err != nil {
+			return fmt.Errorf("mkdir faild: %v", err)
+		}
 	}
 	// 把writeLayer和busybox目录mount到mnt目录下
 	dirs := "dirs=" + rootUrl + "writeLayer:" + rootUrl + "busybox"

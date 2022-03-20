@@ -16,7 +16,7 @@ import (
 它首先会clone出来一个namespace隔离的进程，然后在子进程中，调用/proc/self/exe,也就是自己调用自己
 发送 init 参数，调用我们写的 init 方法，去初始化容器的一些资源
 */
-func Run(tty bool, cmdArray []string, config *subsystem.ResourceConfig, volume string) {
+func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, volume string) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		log.Errorf("Run get pwd err: %v", err)
@@ -46,8 +46,10 @@ func Run(tty bool, cmdArray []string, config *subsystem.ResourceConfig, volume s
 	sendInitCommand(cmdArray, writePipe)
 
 	log.Infof("parent process run")
-	_ = parent.Wait()
-	deleteWorkSpace(rootUrl, mntUrl, volume)
+	if !detach {
+		_ = parent.Wait()
+		deleteWorkSpace(rootUrl, mntUrl, volume)
+	}
 	os.Exit(-1)
 }
 
