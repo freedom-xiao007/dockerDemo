@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 )
 
@@ -16,7 +17,7 @@ import (
 3.下面的clone参数就是去fork出来一个新进程，并且使用了namespace隔离新创建的进程和外部环境
 4.如果用户指定了-ti参数，就需要把当前进程的输入输出导入到标准输入输出上
 */
-func NewParentProcess(tty bool, rootUrl, mntUrl string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, rootUrl, mntUrl, volume string) (*exec.Cmd, *os.File) {
 	readPipe, writePipe, err := os.Pipe()
 	if err != nil {
 		log.Errorf("create pipe error: %v", err)
@@ -35,7 +36,7 @@ func NewParentProcess(tty bool, rootUrl, mntUrl string) (*exec.Cmd, *os.File) {
 
 	// 将管道的一端传入fork的进程中
 	cmd.ExtraFiles = []*os.File{readPipe}
-	if err := newWorkSpace(rootUrl, mntUrl); err != nil {
+	if err := newWorkSpace(rootUrl, mntUrl, volume); err != nil {
 		log.Errorf("new work space err: %v", err)
 		return nil, nil
 	}
@@ -43,7 +44,7 @@ func NewParentProcess(tty bool, rootUrl, mntUrl string) (*exec.Cmd, *os.File) {
 	return cmd, writePipe
 }
 
-func newWorkSpace(rootUrl string, mntUrl string) error {
+func newWorkSpace(rootUrl, mntUrl, volume string) error {
 	if err := createReadOnlyLayer(rootUrl); err != nil {
 		return err
 	}
@@ -51,6 +52,9 @@ func newWorkSpace(rootUrl string, mntUrl string) error {
 		return err
 	}
 	if err := createMountPoint(rootUrl, mntUrl); err != nil {
+		return err
+	}
+	if err := mountExtractVolume(mntUrl, volume); err != nil {
 		return err
 	}
 	return nil
@@ -90,6 +94,49 @@ func createMountPoint(rootUrl string, mntUrl string) error {
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("mmt dir err: %v", err)
+	}
+	return nil
+}
+
+func mountExtractVolume(mntUrl, volume string) error {
+	if volume == "" {
+		return nil
+	}
+	volumeUrls := strings.Split(volume, ":")
+	length := len(volumeUrls)
+	if length != 2 || volumeUrls[0] == "" || volumeUrls[1] == "" {
+		return fmt.Errorf("volume parameter input is not corrent")
+	}
+	return mountVolume(mntUrl, volumeUrls)
+}
+
+func mountVolume(mntUrl string, volumeUrls []string) error {
+	// 如果宿主机文件目录不存在则创建
+	parentUrl := volumeUrls[0]
+	exist, err := pathExist(parentUrl)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if !exist {
+		// 使用mkdir all 递归创建文件夹
+		if err := os.MkdirAll(parentUrl, 0777); err != nil {
+			return fmt.Errorf("mkdir parent dir err: %v", err)
+		}
+	}
+
+	// 在容器文件系统内创建挂载点
+	containerUrl := mntUrl + volumeUrls[1]
+	if err := os.Mkdir(containerUrl, 0777); err != nil {
+		return fmt.Errorf("mkdir container volume err: %v", err)
+	}
+
+	// 把宿主机文件目录挂载到容器挂载点
+	dirs := "dirs=" + parentUrl
+	cmd := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", containerUrl)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("mount volume err: %v", err)
 	}
 	return nil
 }

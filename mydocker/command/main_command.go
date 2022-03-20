@@ -42,6 +42,11 @@ var RunCommand = cli.Command{
 			Name:  "cpushare",
 			Usage: "cpushare limit",
 		},
+		// 添加-v标签
+		cli.StringFlag{
+			Name:  "v",
+			Usage: "volume",
+		},
 	},
 	/*
 		这里是run命令执行的真正函数
@@ -63,7 +68,8 @@ var RunCommand = cli.Command{
 			CpuShare:    context.String("cpuShare"),
 			CpuSet:      context.String("cpuSet"),
 		}
-		run.Run(tty, cmdArray, resConfig)
+		volume := context.String("v")
+		run.Run(tty, cmdArray, resConfig, volume)
 		return nil
 	},
 }
