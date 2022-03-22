@@ -15,4 +15,5 @@ var (
 	EXIT                = "exited"
 	DefaultInfoLocation = "/var/run/mydocker/%s/"
 	ConfigName          = "config.json"
+	ContainerLogFile    = "container.log"
 )

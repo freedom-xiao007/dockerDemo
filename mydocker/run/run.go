@@ -29,7 +29,7 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	}
 	mntUrl := pwd + "/mnt/"
 	rootUrl := pwd + "/"
-	parent, writePipe := container.NewParentProcess(tty, rootUrl, mntUrl, volume)
+	parent, writePipe := container.NewParentProcess(tty, containerName, rootUrl, mntUrl, volume)
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 		// 如果fork进程出现异常，但有相关的文件已经进行了挂载，需要进行清理，避免后面运行报错时，需要手工清理

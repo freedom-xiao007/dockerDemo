@@ -106,3 +106,15 @@ var ListCommand = cli.Command{
 		return run.ListContainers()
 	},
 }
+
+var LogCommand = cli.Command{
+	Name:  "logs",
+	Usage: "print logs of a container",
+	Action: func(context *cli.Context) error {
+		if len(context.Args()) < 1 {
+			return fmt.Errorf("Missing container name")
+		}
+		containerName := context.Args().Get(0)
+		return run.LogContainer(containerName)
+	},
+}
