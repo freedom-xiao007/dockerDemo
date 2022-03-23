@@ -125,7 +125,7 @@ var ExecCommand = cli.Command{
 	Usage: "exec a command into container",
 	Action: func(context *cli.Context) {
 		if os.Getenv(run.EnvExecPid) != "" {
-			log.Infof("pid callback pid %s", os.Getgid())
+			log.Infof("pid callback pid %d", os.Getgid())
 			return
 		}
 

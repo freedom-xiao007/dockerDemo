@@ -28,7 +28,7 @@ func ExecContainer(containerName string, commandArray []string) error {
 
 	// 把命令以空格为分隔符拼接成一个字符串，便于传递
 	cmdStr := strings.Join(commandArray, " ")
-	log.Info("container pid %s", pid)
+	log.Infof("container pid %s", pid)
 	log.Infof("command %s", cmdStr)
 
 	cmd := exec.Command("/proc/self/exe", "exec")
