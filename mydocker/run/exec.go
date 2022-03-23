@@ -1,13 +1,10 @@
 package run
 
 import (
-	"dockerDemo/mydocker/container"
 	// 这个很关键，引入而不使用，但其在启动的时候后自动调用
 	_ "dockerDemo/mydocker/nsenter"
-	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -49,19 +46,4 @@ func ExecContainer(containerName string, commandArray []string) error {
 		return fmt.Errorf("exec container %s err: %v", containerName, err)
 	}
 	return nil
-}
-
-func getContainerPidByName(containerName string) (string, error) {
-	dirUrl := fmt.Sprintf(container.DefaultInfoLocation, containerName)
-	configFilePath := dirUrl + container.ConfigName
-	contentBytes, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return "", fmt.Errorf("read file %s err: %v", configFilePath, err)
-	}
-
-	var containerInfo container.ContainerInfo
-	if err := json.Unmarshal(contentBytes, &containerInfo); err != nil {
-		return "", fmt.Errorf("json ummarshal err: %v", err)
-	}
-	return containerInfo.Pid, nil
 }
