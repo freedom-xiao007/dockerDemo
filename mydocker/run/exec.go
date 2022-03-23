@@ -2,6 +2,7 @@ package run
 
 import (
 	"dockerDemo/mydocker/container"
+	_ "dockerDemo/mydocker/nsenter"
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
