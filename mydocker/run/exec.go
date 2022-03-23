@@ -2,6 +2,7 @@ package run
 
 import (
 	"dockerDemo/mydocker/container"
+	// 这个很关键，引入而不使用，但其在启动的时候后自动调用
 	_ "dockerDemo/mydocker/nsenter"
 	"encoding/json"
 	"fmt"
