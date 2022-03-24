@@ -42,6 +42,12 @@ func ExecContainer(containerName string, commandArray []string) error {
 		return fmt.Errorf("setenv %s err: %v", EnvExecCmd, err)
 	}
 
+	envs, err := getEnvsByPid(pid)
+	if err != nil {
+		return err
+	}
+	cmd.Env = append(os.Environ(), envs...)
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("exec container %s err: %v", containerName, err)
 	}

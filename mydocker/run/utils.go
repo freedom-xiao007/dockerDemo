@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strings"
 )
 
 func getContainerPidByName(containerName string) (string, error) {
@@ -35,4 +36,13 @@ func getContainerInfoByName(containerName string) (*container.ContainerInfo, err
 		return nil, fmt.Errorf("json ummarshal err: %v", err)
 	}
 	return &containerInfo, nil
+}
+
+func getEnvsByPid(pid string) ([]string, error) {
+	path := fmt.Sprintf("/proc/%s/environ", pid)
+	contentBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read file %s err: %v", path, err)
+	}
+	return strings.Split(string(contentBytes), "\u0000"), nil
 }

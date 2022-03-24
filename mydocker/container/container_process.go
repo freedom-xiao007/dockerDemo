@@ -17,7 +17,7 @@ import (
 3.下面的clone参数就是去fork出来一个新进程，并且使用了namespace隔离新创建的进程和外部环境
 4.如果用户指定了-ti参数，就需要把当前进程的输入输出导入到标准输入输出上
 */
-func NewParentProcess(tty bool, containerName, rootUrl, mntUrl, volume string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, containerName, rootUrl, mntUrl, volume string, envSlice []string) (*exec.Cmd, *os.File) {
 	readPipe, writePipe, err := os.Pipe()
 	if err != nil {
 		log.Errorf("create pipe error: %v", err)
@@ -56,6 +56,7 @@ func NewParentProcess(tty bool, containerName, rootUrl, mntUrl, volume string) (
 		return nil, nil
 	}
 	cmd.Dir = mntUrl
+	cmd.Env = append(os.Environ(), envSlice...)
 	return cmd, writePipe
 }
 

@@ -21,7 +21,7 @@ import (
 它首先会clone出来一个namespace隔离的进程，然后在子进程中，调用/proc/self/exe,也就是自己调用自己
 发送 init 参数，调用我们写的 init 方法，去初始化容器的一些资源
 */
-func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, volume, containerName string) {
+func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, volume, containerName string, envSlice []string) {
 	id, containerName := getContainerName(containerName)
 
 	pwd, err := os.Getwd()
@@ -31,7 +31,7 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	}
 	mntUrl := pwd + "/mnt/"
 	rootUrl := pwd + "/"
-	parent, writePipe := container.NewParentProcess(tty, containerName, rootUrl, mntUrl, volume)
+	parent, writePipe := container.NewParentProcess(tty, containerName, rootUrl, mntUrl, volume, envSlice)
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 		// 如果fork进程出现异常，但有相关的文件已经进行了挂载，需要进行清理，避免后面运行报错时，需要手工清理

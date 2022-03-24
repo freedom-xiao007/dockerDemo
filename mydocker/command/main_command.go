@@ -58,6 +58,10 @@ var RunCommand = cli.Command{
 			Name:  "name",
 			Usage: "container name",
 		},
+		cli.StringSliceFlag{
+			Name:  "e",
+			Usage: "set environment",
+		},
 	},
 	/*
 		这里是run命令执行的真正函数
@@ -83,7 +87,8 @@ var RunCommand = cli.Command{
 		volume := context.String("v")
 		// 将取到的容器名称传递下去，如果没有则为空
 		containerName := context.String("name")
-		run.Run(tty, detach, cmdArray, resConfig, volume, containerName)
+		envSlice := context.StringSlice("e")
+		run.Run(tty, detach, cmdArray, resConfig, volume, containerName, envSlice)
 		return nil
 	},
 }
