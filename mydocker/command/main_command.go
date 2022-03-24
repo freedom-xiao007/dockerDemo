@@ -95,8 +95,8 @@ var CommitCommand = cli.Command{
 		if len(context.Args()) < 1 {
 			return fmt.Errorf("Missing container name")
 		}
-		imageName := context.Args().Get(0)
-		return run.CommitContainer(imageName)
+		containerName := context.Args().Get(0)
+		return run.CommitContainer(containerName)
 	},
 }
 

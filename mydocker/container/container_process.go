@@ -51,7 +51,7 @@ func NewParentProcess(tty bool, containerName, rootUrl, mntUrl, volume string) (
 
 	// 将管道的一端传入fork的进程中
 	cmd.ExtraFiles = []*os.File{readPipe}
-	if err := newWorkSpace(rootUrl, mntUrl, volume); err != nil {
+	if err := newWorkSpace(rootUrl, mntUrl, volume, containerName); err != nil {
 		log.Errorf("new work space err: %v", err)
 		return nil, nil
 	}
@@ -59,17 +59,17 @@ func NewParentProcess(tty bool, containerName, rootUrl, mntUrl, volume string) (
 	return cmd, writePipe
 }
 
-func newWorkSpace(rootUrl, mntUrl, volume string) error {
+func newWorkSpace(rootUrl, mntUrl, volume, containerName string) error {
 	if err := createReadOnlyLayer(rootUrl); err != nil {
 		return err
 	}
-	if err := createWriteLayer(rootUrl); err != nil {
+	if err := createWriteLayer(rootUrl, containerName); err != nil {
 		return err
 	}
-	if err := createMountPoint(rootUrl, mntUrl); err != nil {
+	if err := createMountPoint(rootUrl, mntUrl, containerName); err != nil {
 		return err
 	}
-	if err := mountExtractVolume(mntUrl, volume); err != nil {
+	if err := mountExtractVolume(mntUrl, volume, containerName); err != nil {
 		return err
 	}
 	return nil
@@ -89,34 +89,35 @@ func createReadOnlyLayer(rootUrl string) error {
 }
 
 // 创建一个名为writeLayer的文件夹作为容器的唯一可写层
-func createWriteLayer(rootUrl string) error {
-	writeUrl := rootUrl + "writeLayer/"
+func createWriteLayer(rootUrl, containerName string) error {
+	writeUrl := rootUrl + "writeLayer/" + containerName + "/"
 	exist, err := pathExist(writeUrl)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
 	if !exist {
-		if err := os.Mkdir(writeUrl, 0777); err != nil {
+		if err := os.MkdirAll(writeUrl, 0777); err != nil {
 			return fmt.Errorf("create write layer failed: %v", err)
 		}
 	}
 	return nil
 }
 
-func createMountPoint(rootUrl string, mntUrl string) error {
+func createMountPoint(rootUrl, mntUrl, containerName string) error {
 	// 创建mnt文件夹作为挂载点
-	exist, err := pathExist(mntUrl)
+	mountPath := mntUrl + containerName + "/"
+	exist, err := pathExist(mountPath)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
 	if !exist {
-		if err := os.Mkdir(mntUrl, 0777); err != nil {
+		if err := os.MkdirAll(mountPath, 0777); err != nil {
 			return fmt.Errorf("mkdir faild: %v", err)
 		}
 	}
 	// 把writeLayer和busybox目录mount到mnt目录下
 	dirs := "dirs=" + rootUrl + "writeLayer:" + rootUrl + "busybox"
-	cmd := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mntUrl)
+	cmd := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mountPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -125,7 +126,7 @@ func createMountPoint(rootUrl string, mntUrl string) error {
 	return nil
 }
 
-func mountExtractVolume(mntUrl, volume string) error {
+func mountExtractVolume(mntUrl, volume, containerName string) error {
 	if volume == "" {
 		return nil
 	}
@@ -134,7 +135,7 @@ func mountExtractVolume(mntUrl, volume string) error {
 	if length != 2 || volumeUrls[0] == "" || volumeUrls[1] == "" {
 		return fmt.Errorf("volume parameter input is not corrent")
 	}
-	return mountVolume(mntUrl, volumeUrls)
+	return mountVolume(mntUrl+containerName+"/", volumeUrls)
 }
 
 func mountVolume(mntUrl string, volumeUrls []string) error {
@@ -153,7 +154,7 @@ func mountVolume(mntUrl string, volumeUrls []string) error {
 
 	// 在容器文件系统内创建挂载点
 	containerUrl := mntUrl + volumeUrls[1]
-	if err := os.Mkdir(containerUrl, 0777); err != nil {
+	if err := os.MkdirAll(containerUrl, 0777); err != nil {
 		return fmt.Errorf("mkdir container volume err: %v", err)
 	}
 

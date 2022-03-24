@@ -22,6 +22,8 @@ import (
 发送 init 参数，调用我们写的 init 方法，去初始化容器的一些资源
 */
 func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, volume, containerName string) {
+	id, containerName := getContainerName(containerName)
+
 	pwd, err := os.Getwd()
 	if err != nil {
 		log.Errorf("Run get pwd err: %v", err)
@@ -33,12 +35,12 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 		// 如果fork进程出现异常，但有相关的文件已经进行了挂载，需要进行清理，避免后面运行报错时，需要手工清理
-		deleteWorkSpace(rootUrl, mntUrl, volume)
+		deleteWorkSpace(rootUrl, mntUrl, volume, containerName)
 		return
 	}
 
 	// 记录容器信息
-	containerName, err = recordContainerInfo(parent.Process.Pid, cmdArray, containerName)
+	containerName, err = recordContainerInfo(parent.Process.Pid, cmdArray, id, containerName)
 	if err != nil {
 		log.Errorf("record contariner info err: %v", err)
 		return
@@ -60,7 +62,7 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	log.Infof("parent process run")
 	if !detach {
 		_ = parent.Wait()
-		deleteWorkSpace(rootUrl, mntUrl, volume)
+		deleteWorkSpace(rootUrl, mntUrl, volume, containerName)
 		deleteContainerInfo(containerName)
 	}
 	os.Exit(-1)
@@ -73,13 +75,17 @@ func deleteContainerInfo(containerName string) {
 	}
 }
 
-func recordContainerInfo(pid int, cmdArray []string, containerName string) (string, error) {
+func getContainerName(containerName string) (string, string) {
 	id := randStringBytes(10)
-	createTime := time.Now().Format("2000-01-01 00:00:00")
-	command := strings.Join(cmdArray, " ")
 	if containerName == "" {
 		containerName = id
 	}
+	return id, containerName
+}
+
+func recordContainerInfo(pid int, cmdArray []string, id, containerName string) (string, error) {
+	createTime := time.Now().Format("2000-01-01 00:00:00")
+	command := strings.Join(cmdArray, " ")
 	containerInfo := &container.ContainerInfo{
 		ID:         id,
 		Pid:        strconv.Itoa(pid),
@@ -135,13 +141,13 @@ func sendInitCommand(array []string, writePipe *os.File) {
 	}
 }
 
-func deleteWorkSpace(rootUrl, mntUrl, volume string) {
-	unmountVolume(mntUrl, volume)
-	deleteMountPoint(mntUrl)
-	deleteWriteLayer(rootUrl)
+func deleteWorkSpace(rootUrl, mntUrl, volume, containerName string) {
+	unmountVolume(mntUrl, volume, containerName)
+	deleteMountPoint(mntUrl + containerName + "/")
+	deleteWriteLayer(rootUrl, containerName)
 }
 
-func unmountVolume(mntUrl string, volume string) {
+func unmountVolume(mntUrl, volume, containerName string) {
 	if volume == "" {
 		return
 	}
@@ -151,7 +157,7 @@ func unmountVolume(mntUrl string, volume string) {
 	}
 
 	// 卸载容器内的 volume 挂载点的文件系统
-	containerUrl := mntUrl + volumeUrls[1]
+	containerUrl := mntUrl + containerName + "/" + volumeUrls[1]
 	cmd := exec.Command("umount", containerUrl)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -172,8 +178,8 @@ func deleteMountPoint(mntUrl string) {
 	}
 }
 
-func deleteWriteLayer(rootUrl string) {
-	writeUrl := rootUrl + "writeLayer/"
+func deleteWriteLayer(rootUrl, containerName string) {
+	writeUrl := rootUrl + "writeLayer/" + containerName
 	if err := os.RemoveAll(writeUrl); err != nil {
 		log.Errorf("deleteMountPoint remove %s err : %v", writeUrl, err)
 	}
