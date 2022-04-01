@@ -1,6 +1,18 @@
 # 自己动手写Docker实践工程
 ***
 
+## 环境说明
+本文基于下面的环境进行开发发运：
+
+- Ubuntu 20 TLS ：本地搭建的Ubuntu系统
+- Centos7 ：腾讯云服务器，也能跑本工程下的所有代码
+
+注：Windows不能运行该工程，因为其中有些库是Linux采用的，
+
+但如果想要写Windows的话，可以仓库RunC中关于Windows相关的代码
+
+如果后期有时间的话，本工程也尝试适配下Windows系统
+
 ## 运行说明
 docker demo 的代码都位于文件夹：mydocker下
 
