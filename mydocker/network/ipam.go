@@ -48,7 +48,7 @@ func (ipam *IPAM) load() error {
 	if err != nil {
 		return fmt.Errorf("dump allocation info err: %v", err)
 	}
-	log.Infof("load ipam file from: %s", subnetConfigFile)
+	log.Infof("load ipam file from: %s", subnetConfigFile.Name())
 	return nil
 }
 
@@ -156,6 +156,7 @@ func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr *net.IP) error {
 	for t := uint(4); t > 0; t -= 1 {
 		index += int(releaseIp[t-1]-subnet.IP[t-1]) << ((4 - t) * 8)
 	}
+	log.Infof("release index: %d", index)
 
 	// 将分配的位图索引中的位置的值置为0
 	ipalloc := []byte((*ipam.Subnets)[subnet.String()])
