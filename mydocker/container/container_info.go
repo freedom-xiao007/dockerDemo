@@ -1,12 +1,13 @@
 package container
 
 type ContainerInfo struct {
-	Pid        string `json:"pid"` // 容器的init进程在宿主机上的PID
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Command    string `json:"command"`
-	CreateTime string `json:"createTime"`
-	Status     string `json:"status"`
+	Pid         string   `json:"pid"` // 容器的init进程在宿主机上的PID
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Command     string   `json:"command"`
+	CreateTime  string   `json:"createTime"`
+	Status      string   `json:"status"`
+	PortMapping []string `json:"portMapping"`
 }
 
 var (

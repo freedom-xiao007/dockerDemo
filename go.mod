@@ -6,6 +6,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.2.2
 	github.com/urfave/cli v1.22.5
+	github.com/vishvananda/netlink v1.1.0
 )
 
 require (
@@ -14,5 +15,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df // indirect
 	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect
 )

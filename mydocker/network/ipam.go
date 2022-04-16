@@ -133,11 +133,13 @@ func (ipam *IPAM) Allocate(subnet *net.IPNet) (ip net.IP, err error) {
 	}
 
 	// 通过dump将分配结果保存到文件中
+	log.Infof("allocate subnet: %s, ip: %s", subnet.String(), ip.String())
 	return ip, ipam.dump()
 }
 
 // Release 地址释放
 func (ipam *IPAM) Release(subnet *net.IPNet, ipaddr *net.IP) error {
+	log.Infof("release subnet: %s, ip: %s", subnet.String(), ipaddr.String())
 	ipam.Subnets = &map[string]string{}
 
 	// 从文件中加载网段分配信息

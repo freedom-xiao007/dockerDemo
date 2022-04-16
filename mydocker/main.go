@@ -25,6 +25,7 @@ func main() {
 		command.ExecCommand,
 		command.StopCommand,
 		command.RemoveCommand,
+		command.NetworkCommand,
 	}
 
 	app.Before = func(context *cli.Context) error {

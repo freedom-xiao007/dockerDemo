@@ -25,7 +25,7 @@ func TestIPAM_Allocate(t *testing.T) {
 	assert.Equal(t, "192.168.0.2", ip2.String())
 
 	// 释放调第一个IP
-	_, ipNet, _ = net.ParseCIDR("192.168.0.0/24")
+	_, ipNet, _ = net.ParseCIDR("192.168.0.1/24")
 	assert.Equal(t, nil, ipAllocator.Release(ipNet, &ip1))
 
 	// 能分配得第一个IP
@@ -39,4 +39,14 @@ func TestIPAM_Allocate(t *testing.T) {
 	ip4, err := ipAllocator.Allocate(ipNet)
 	assert.Equal(t, nil, err)
 	assert.Equal(t, "192.168.0.3", ip4.String())
+
+	// 释放调第2个IP
+	_, ipNet, _ = net.ParseCIDR("192.168.0.2/24")
+	assert.Equal(t, nil, ipAllocator.Release(ipNet, &ip2))
+
+	// 第二个ip分配
+	_, ipNet, _ = net.ParseCIDR("192.168.0.0/24")
+	ip2, err = ipAllocator.Allocate(ipNet)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "192.168.0.2", ip2.String())
 }
