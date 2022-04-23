@@ -4,6 +4,7 @@ import (
 	"dockerDemo/mydocker/cgroup"
 	"dockerDemo/mydocker/cgroup/subsystem"
 	"dockerDemo/mydocker/container"
+	"dockerDemo/mydocker/network"
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,8 @@ import (
 它首先会clone出来一个namespace隔离的进程，然后在子进程中，调用/proc/self/exe,也就是自己调用自己
 发送 init 参数，调用我们写的 init 方法，去初始化容器的一些资源
 */
-func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, volume, containerName string, envSlice []string) {
+func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, volume, containerName string,
+	envSlice []string, nw string, portMapping []string) {
 	id, containerName := getContainerName(containerName)
 
 	pwd, err := os.Getwd()
@@ -55,6 +57,21 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	if err := cgroupManager.Set(config); err != nil {
 		log.Errorf("cgoup set err: %v", err)
 		return
+	}
+
+	if nw != "" {
+		// 定义网络
+		_ = network.Init()
+		containerInfo := &container.ContainerInfo{
+			ID:          id,
+			Pid:         strconv.Itoa(parent.Process.Pid),
+			Name:        containerName,
+			PortMapping: portMapping,
+		}
+		if err := network.Connect(nw, containerInfo); err != nil {
+			log.Errorf("connnect network err: %v", err)
+			return
+		}
 	}
 
 	sendInitCommand(cmdArray, writePipe)

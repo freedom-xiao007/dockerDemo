@@ -44,25 +44,39 @@ func (b *BridgeNetworkDriver) Delete(network NetWork) error {
 	return netlink.LinkDel(br)
 }
 
+// Connect 连接一个网络和网络端点
 func (b *BridgeNetworkDriver) Connect(network *NetWork, endpoint *Endpoint) error {
+	// 获取网络名，linux bridge 的接口名
 	bridgeName := network.Name
+	// 通过接口名获取到linux bridge接口的对象和接口属性
 	br, err := netlink.LinkByName(bridgeName)
 	if err != nil {
 		return err
 	}
 
+	// 创建veth接口的配置
 	la := netlink.NewLinkAttrs()
+	// 由于linux接口名的限制，名字取endpoint id的前5位
 	la.Name = endpoint.ID[:5]
+	// 通过设置veth接口的master属性，设置这个veth的一端挂载到网络对应的linux bridge上
 	la.MasterIndex = br.Attrs().Index
 
+	// 创建Veth对象，通过peerName配置veth另外一端的接口名
+	// 配置veth另外一端的名字cif-{endpoint id的前5位}
 	endpoint.Device = netlink.Veth{
 		LinkAttrs: la,
 		PeerName:  "cif-" + endpoint.ID[:5],
 	}
 
+	// 调用netlink的linkadd方法创建出这个veth接口
+	// 因为上面指定了link的masterIndex是网络对应的linux bridge
+	// 所以Veth的一端就已经挂载到了网络对应的linux bridge上了
 	if err = netlink.LinkAdd(&endpoint.Device); err != nil {
 		return fmt.Errorf("add endpoint device err: %w", err)
 	}
+
+	// 调用netlink的linkSetup方法，设置veth启动
+	// 相当于ip link set xxx up 命令
 	if err = netlink.LinkSetUp(&endpoint.Device); err != nil {
 		return fmt.Errorf("add endpoint device setup err: %w", err)
 	}
@@ -142,6 +156,7 @@ func setInterfaceUp(interfaceName string) error {
 	if err := netlink.LinkSetUp(iface); err != nil {
 		return fmt.Errorf("error enabling interface for %s, err: %w", interfaceName, err)
 	}
+	log.Infof("ip link set up: %s -- %d", interfaceName, iface.Attrs().Index)
 	return nil
 }
 
@@ -174,6 +189,7 @@ func setInterfaceIp(name string, rawIp string) error {
 		Scope:     0,
 		Broadcast: nil,
 	}
+	log.Infof("add addr, iface: %d -- %s, ip: %s", iface.Attrs().Index, iface.Attrs().Name, addr.String())
 	return netlink.AddrAdd(iface, addr)
 }
 
