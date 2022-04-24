@@ -50,7 +50,7 @@
 
 看了下，windows是基于：[https://github.com/microsoft/hcsshim](https://github.com/microsoft/hcsshim)
 
-感觉难道有点大，看看后面时间了，时间不紧的话，可以尝试尝试
+感觉难度有点大，看看后面时间了，时间不紧的话，可以尝试尝试
 
 ## 运行说明
 docker demo 的代码都位于文件夹：mydocker下
