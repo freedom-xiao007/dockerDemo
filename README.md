@@ -7,8 +7,8 @@
 ## 工程说明
 同时放到了Gitee和Github上，都可进行获取
 
-- [Gitee: https://gitee.com/free-love/docker-demo](https://gitee.com/free-love/docker-demo)
 - [GitHub: https://github.com/lw1243925457/dockerDemo](https://github.com/lw1243925457/dockerDemo)
+- [Gitee: https://gitee.com/free-love/docker-demo](https://gitee.com/free-love/docker-demo)
 
 工程基于Go：1.17
 
