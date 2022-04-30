@@ -26,13 +26,8 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	envSlice []string, nw string, portMapping []string) {
 	id, containerName := getContainerName(containerName)
 
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Errorf("Run get pwd err: %v", err)
-		return
-	}
-	mntUrl := pwd + "/mnt/"
-	rootUrl := pwd + "/"
+	mntUrl := container.RootUrl + "/mnt/"
+	rootUrl := container.BusyboxPath
 	parent, writePipe := container.NewParentProcess(tty, containerName, rootUrl, mntUrl, volume, envSlice)
 	if err := parent.Start(); err != nil {
 		log.Error(err)
@@ -42,7 +37,7 @@ func Run(tty, detach bool, cmdArray []string, config *subsystem.ResourceConfig, 
 	}
 
 	// 记录容器信息
-	containerName, err = recordContainerInfo(parent.Process.Pid, cmdArray, id, containerName)
+	containerName, err := recordContainerInfo(parent.Process.Pid, cmdArray, id, containerName)
 	if err != nil {
 		log.Errorf("record contariner info err: %v", err)
 		return

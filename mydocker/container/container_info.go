@@ -17,4 +17,6 @@ var (
 	DefaultInfoLocation = "/var/run/mydocker/%s/"
 	ConfigName          = "config.json"
 	ContainerLogFile    = "container.log"
+	RootUrl             = "/var/lib/mydocker/container"
+	BusyboxPath         = "/opt/busybox"
 )

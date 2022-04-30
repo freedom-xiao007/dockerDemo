@@ -64,7 +64,7 @@ func newWorkSpace(rootUrl, mntUrl, volume, containerName string) error {
 	if err := createReadOnlyLayer(rootUrl); err != nil {
 		return err
 	}
-	if err := createWriteLayer(rootUrl, containerName); err != nil {
+	if err := createWriteLayer(containerName); err != nil {
 		return err
 	}
 	if err := createMountPoint(rootUrl, mntUrl, containerName); err != nil {
@@ -77,8 +77,7 @@ func newWorkSpace(rootUrl, mntUrl, volume, containerName string) error {
 }
 
 // 我们直接把busybox放到了工程目录下，直接作为容器的只读层
-func createReadOnlyLayer(rootUrl string) error {
-	busyboxUrl := rootUrl + "busybox/"
+func createReadOnlyLayer(busyboxUrl string) error {
 	exist, err := pathExist(busyboxUrl)
 	if err != nil {
 		return err
@@ -90,8 +89,8 @@ func createReadOnlyLayer(rootUrl string) error {
 }
 
 // 创建一个名为writeLayer的文件夹作为容器的唯一可写层
-func createWriteLayer(rootUrl, containerName string) error {
-	writeUrl := rootUrl + "writeLayer/" + containerName + "/"
+func createWriteLayer(containerName string) error {
+	writeUrl := RootUrl + "/writeLayer/" + containerName + "/"
 	exist, err := pathExist(writeUrl)
 	if err != nil && !os.IsNotExist(err) {
 		return err
@@ -107,6 +106,7 @@ func createWriteLayer(rootUrl, containerName string) error {
 func createMountPoint(rootUrl, mntUrl, containerName string) error {
 	// 创建mnt文件夹作为挂载点
 	mountPath := mntUrl + containerName + "/"
+	log.Infof("root url: %s, mntUrl: %s, mountPath: %s", rootUrl, mntUrl, mountPath)
 	exist, err := pathExist(mountPath)
 	if err != nil && !os.IsNotExist(err) {
 		return err
@@ -117,8 +117,9 @@ func createMountPoint(rootUrl, mntUrl, containerName string) error {
 		}
 	}
 	// 把writeLayer和busybox目录mount到mnt目录下
-	dirs := "dirs=" + rootUrl + "writeLayer:" + rootUrl + "busybox"
+	dirs := "dirs=" + RootUrl + "/writeLayer:" + rootUrl
 	cmd := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mountPath)
+	log.Infof(cmd.String())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
