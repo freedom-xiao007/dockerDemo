@@ -74,7 +74,17 @@ go build mydocker/main.go
 
 如果在克隆本工程，运行时出现报错：找不到 /proc
 
-需要将 busybox下的内容复制到工程根目录下的 /mnt 目录下
+需要将 busybox 下的内容复制到工程根目录下的 /opt/busybox,命令如下（压缩包放到了gitee上，可以使用命令直接下载）
+
+```powershell
+wget https://gitee.com/free-love/docker-demo/attach_files/1048146/download/busybox.tar
+
+➜  dockerDemo git:(main) ✗ mkdir /opt/busybox
+➜  dockerDemo git:(main) ✗ tar -xvf ./busybox.tar -C /opt/busybox/
+
+➜  dockerDemo git:(main) ✗ ls /opt/busybox
+bin  dev  etc  home  proc  root  sys  tmp  usr  var
+```
 
 ## 实践文档
 在编写代码时，也遇到过不少问题，基本上都对过程进行记录，代码相对书中应该是比较完整，如果在编写过程中遇到问题，可以当做相关的参考
